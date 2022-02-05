@@ -90,11 +90,7 @@ const progressSegmentsUpdate = () => {
     progressText.textContent = `${Math.ceil(progressPercent)}%`;
     progressText.style.width = `${Math.ceil(progressPercent)}%`;
 
-    if (progressPercent) {
-      progressText.style.dispay = "";
-    } else {
-      progressText.style.dispay = "none";
-    }
+    progressText.style.dispay = progressPercent ? "" : "none";
   }
 };
 
@@ -268,7 +264,7 @@ const initStep_6 = () => {
 };
 
 const main = () => {
-  stepActive(5);
+  stepActive(1);
   progressSegmentsUpdate();
 };
 
