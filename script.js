@@ -16,16 +16,19 @@ const data = {
 };
 
 const stepActive = (number) => {
-  localStorage.setItem("step", number);
+  localStorageObject.set("step", number);
   const card = document.querySelector(`.card[data-step="${number}"]`);
 
-  if (!card || card.dataset.inited) return;
+  if (!card) return;
 
   for (const card of cards) {
     card.classList.remove("card_active");
   }
 
   card.classList.add("card_active");
+
+  if (card.dataset.inited) return;
+
   card.dataset.inited = true;
 
   switch (number) {
@@ -52,30 +55,29 @@ const stepActive = (number) => {
 
 const progressSegmentsUpdate = () => {
   let progressValue = 0;
-  const dataFromLS = JSON.parse(localStorage.getItem("data"));
 
-  if (dataFromLS?.question_1 || data.question_1) {
+  if (localStorageObject.get("question_1") || data.question_1) {
     progressValue += 1;
   }
 
-  if (dataFromLS?.question_2.length || data.question_2.length) {
+  if (localStorageObject.get("question_2")?.length || data.question_2.length) {
     progressValue += 1;
   }
 
-  if (dataFromLS?.question_3.length || data.question_3.length) {
+  if (localStorageObject.get("question_3")?.length || data.question_3.length) {
     progressValue += 1;
   }
 
-  if (dataFromLS?.question_4.name || data.question_4.name) {
+  if (localStorageObject.get("name") || data.question_4.name) {
     progressValue += 1;
   }
 
-  if (dataFromLS?.question_4.surname || data.question_4.surname) {
+  if (localStorageObject.get("surname") || data.question_4.surname) {
     progressValue += 1;
   }
 
   if (
-    RegExForMail.test(dataFromLS?.question_4.email || data.question_4.email)
+    RegExForMail.test(localStorageObject.get("email") || data.question_4.email)
   ) {
     progressValue += 1;
   }
@@ -99,9 +101,22 @@ const toggleItem = (array, item) => {
   index === -1 ? array.push(item) : array.splice(index, 1);
 };
 
+const localStorageObject = {
+  set: (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+  },
+  get: (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch (error) {
+      return null;
+    }
+  },
+};
+
 const initStep_1 = () => {
   const card = document.querySelector(".card[data-step='1']");
-  const startButton = document.querySelector("button[data-action='start']");
+  const startButton = card.querySelector("button[data-action='start']");
 
   startButton.addEventListener("click", () => stepActive(2));
 };
@@ -110,21 +125,27 @@ const initStep_2 = () => {
   const card = document.querySelector(".card[data-step='2']");
   const variants = card.querySelectorAll("[data-value]");
 
-  const toPrevButton = card.querySelector("button[data-action='toPrevPage']");
-  const toNextButton = card.querySelector("button[data-action='toNextPage']");
-
-  toNextButton.disabled = true;
-
-  toPrevButton.addEventListener("click", () => stepActive(1));
-  toNextButton.addEventListener("click", () => stepActive(3));
-
   for (const variant of variants) {
     variant.addEventListener("click", variantClickHandler);
   }
 
+  const toPrevButton = card.querySelector("button[data-action='toPrevPage']");
+  const toNextButton = card.querySelector("button[data-action='toNextPage']");
+
+  toPrevButton.addEventListener("click", () => stepActive(1));
+  toNextButton.addEventListener("click", () => stepActive(3));
+
+  const q1ValueFromLS = localStorageObject.get("question_1");
+
+  if (q1ValueFromLS) {
+    card.querySelector(`input[value='${q1ValueFromLS}']`).checked = true;
+  }
+
+  toNextButton.disabled = !q1ValueFromLS || false;
+
   function variantClickHandler() {
     data.question_1 = this.dataset.value;
-    localStorage.setItem("data", JSON.stringify(data));
+    localStorageObject.set("question_1", data.question_1);
 
     for (const variant of variants) {
       const radioButton = variant.querySelector('input[type="radio"]');
@@ -146,8 +167,6 @@ const initStep_3 = () => {
   const toPrevButton = card.querySelector("button[data-action='toPrevPage']");
   const toNextButton = card.querySelector("button[data-action='toNextPage']");
 
-  toNextButton.disabled = true;
-
   toPrevButton.addEventListener("click", () => stepActive(2));
   toNextButton.addEventListener("click", () => stepActive(4));
 
@@ -155,9 +174,21 @@ const initStep_3 = () => {
     variant.addEventListener("click", variantClickHandler);
   }
 
+  const q2ValueFromLS = localStorageObject.get("question_2");
+
+  if (q2ValueFromLS?.length) {
+    for (const variant of q2ValueFromLS) {
+      card.querySelector(`input[value='${variant}']`).checked = true;
+    }
+
+    data.question_2 = q2ValueFromLS;
+  }
+
+  toNextButton.disabled = !q2ValueFromLS?.length || false;
+
   function variantClickHandler() {
     toggleItem(data.question_2, this.dataset.value);
-    localStorage.setItem("data", JSON.stringify(data));
+    localStorageObject.set("question_2", data.question_2);
 
     for (const variant of variants) {
       const checkbox = variant.querySelector('input[type="checkbox"]');
@@ -176,10 +207,22 @@ const initStep_4 = () => {
   const toPrevButton = card.querySelector("button[data-action='toPrevPage']");
   const toNextButton = card.querySelector("button[data-action='toNextPage']");
 
-  toNextButton.disabled = true;
-
   toPrevButton.addEventListener("click", () => stepActive(3));
   toNextButton.addEventListener("click", () => stepActive(5));
+
+  const q3ValueFromLS = localStorageObject.get("question_3");
+
+  if (q3ValueFromLS?.length) {
+    for (const variant of q3ValueFromLS) {
+      card
+        .querySelector(`div[data-value='${variant}']`)
+        .classList.add("variant-square--active");
+    }
+
+    data.question_3 = q3ValueFromLS;
+  }
+
+  toNextButton.disabled = !q3ValueFromLS?.length || false;
 
   for (const variant of variants) {
     variant.addEventListener("click", variantClickHandler);
@@ -187,7 +230,7 @@ const initStep_4 = () => {
 
   function variantClickHandler() {
     toggleItem(data.question_3, this.dataset.value);
-    localStorage.setItem("data", JSON.stringify(data));
+    localStorageObject.set("question_3", data.question_3);
 
     for (const variant of variants) {
       data.question_3.includes(variant.dataset.value)
@@ -219,37 +262,48 @@ const initStep_5 = () => {
   surnameInput.addEventListener("keyup", surnameInputHandler);
   emailInput.addEventListener("keyup", emailInputHandler);
 
+  if (localStorageObject.get("name")) {
+    nameInput.value = localStorageObject.get("name");
+  }
+
+  if (localStorageObject.get("surname")) {
+    surnameInput.value = localStorageObject.get("surname");
+  }
+
+  if (localStorageObject.get("email")) {
+    emailInput.value = localStorageObject.get("email");
+  }
+
   function nameInputHandler() {
     data.question_4.name = this.value;
+    localStorageObject.set("name", data.question_4.name);
     checkFields();
   }
 
   function surnameInputHandler() {
     data.question_4.surname = this.value;
-    localStorage.setItem("data", JSON.stringify(data));
-
+    localStorageObject.set("surname", data.question_4.surname);
     checkFields();
   }
 
   function emailInputHandler() {
     data.question_4.email = this.value;
-    localStorage.setItem("data", JSON.stringify(data));
-
+    localStorageObject.set("email", data.question_4.email);
     checkFields();
   }
 
   function checkFields() {
-    let activeButton = true;
+    let activeNextButton = false;
 
     if (
-      !data.question_4.name ||
-      !data.question_4.surname ||
-      !RegExForMail.test(data.question_4.email)
+      data.question_4.name &&
+      data.question_4.surname &&
+      RegExForMail.test(data.question_4.email)
     ) {
-      activeButton = false;
+      activeNextButton = true;
     }
 
-    toNextButton.disabled = !activeButton;
+    toNextButton.disabled = !activeNextButton;
     progressSegmentsUpdate();
   }
 };
@@ -259,12 +313,11 @@ const initStep_6 = () => {
   const emailSpan = card.querySelector("span[data-field='email']");
 
   emailSpan.textContent =
-    JSON.parse(localStorage.getItem("data")).question_4.email ||
-    data.question_4.email;
+    localStorageObject.get("email") || data.question_4.email;
 };
 
 const main = () => {
-  stepActive(localStorage.getItem("step") || 1);
+  stepActive(parseInt(localStorageObject.get("step")) || 1);
   progressSegmentsUpdate();
 };
 
