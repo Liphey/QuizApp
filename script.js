@@ -264,14 +264,17 @@ const initStep_5 = () => {
 
   if (localStorageObject.get("name")) {
     nameInput.value = localStorageObject.get("name");
+    checkFields();
   }
 
   if (localStorageObject.get("surname")) {
     surnameInput.value = localStorageObject.get("surname");
+    checkFields();
   }
 
   if (localStorageObject.get("email")) {
     emailInput.value = localStorageObject.get("email");
+    checkFields();
   }
 
   function nameInputHandler() {
@@ -296,9 +299,11 @@ const initStep_5 = () => {
     let activeNextButton = false;
 
     if (
-      data.question_4.name &&
-      data.question_4.surname &&
-      RegExForMail.test(data.question_4.email)
+      (localStorageObject.get("name") || data.question_4.name) &&
+      (localStorageObject.get("surname") || data.question_4.surname) &&
+      RegExForMail.test(
+        localStorageObject.get("email") || data.question_4.email
+      )
     ) {
       activeNextButton = true;
     }
