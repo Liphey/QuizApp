@@ -177,11 +177,11 @@ const initStep_3 = () => {
   const q2ValueFromLS = localStorageObject.get("question_2");
 
   if (q2ValueFromLS?.length) {
+    data.question_2 = q2ValueFromLS;
+
     for (const variant of q2ValueFromLS) {
       card.querySelector(`input[value='${variant}']`).checked = true;
     }
-
-    data.question_2 = q2ValueFromLS;
   }
 
   toNextButton.disabled = !q2ValueFromLS?.length || false;
@@ -213,13 +213,13 @@ const initStep_4 = () => {
   const q3ValueFromLS = localStorageObject.get("question_3");
 
   if (q3ValueFromLS?.length) {
+    data.question_3 = q3ValueFromLS;
+
     for (const variant of q3ValueFromLS) {
       card
         .querySelector(`div[data-value='${variant}']`)
         .classList.add("variant-square--active");
     }
-
-    data.question_3 = q3ValueFromLS;
   }
 
   toNextButton.disabled = !q3ValueFromLS?.length || false;
@@ -253,10 +253,10 @@ const initStep_5 = () => {
   const toPrevButton = card.querySelector("button[data-action='toPrevPage']");
   const toNextButton = card.querySelector("button[data-action='toNextPage']");
 
-  toNextButton.disabled = true;
-
   toPrevButton.addEventListener("click", () => stepActive(4));
   toNextButton.addEventListener("click", () => stepActive(6));
+
+  toNextButton.disabled = true;
 
   nameInput.addEventListener("keyup", nameInputHandler);
   surnameInput.addEventListener("keyup", surnameInputHandler);
