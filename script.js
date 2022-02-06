@@ -16,6 +16,7 @@ const data = {
 };
 
 const stepActive = (number) => {
+  localStorage.setItem("step", number);
   const card = document.querySelector(`.card[data-step="${number}"]`);
 
   if (!card || card.dataset.inited) return;
@@ -25,58 +26,57 @@ const stepActive = (number) => {
   }
 
   card.classList.add("card_active");
-
   card.dataset.inited = true;
 
-  if (number === 1) {
-    initStep_1();
-  }
-
-  if (number === 2) {
-    initStep_2();
-  }
-
-  if (number === 3) {
-    initStep_3();
-  }
-
-  if (number === 4) {
-    initStep_4();
-  }
-
-  if (number === 5) {
-    initStep_5();
-  }
-
-  if (number === 6) {
-    initStep_6();
+  switch (number) {
+    case 1:
+      initStep_1();
+      break;
+    case 2:
+      initStep_2();
+      break;
+    case 3:
+      initStep_3();
+      break;
+    case 4:
+      initStep_4();
+      break;
+    case 5:
+      initStep_5();
+      break;
+    case 6:
+      initStep_6();
+      break;
   }
 };
 
 const progressSegmentsUpdate = () => {
   let progressValue = 0;
+  const dataFromLS = JSON.parse(localStorage.getItem("data"));
 
-  if (data.question_1) {
+  if (dataFromLS?.question_1 || data.question_1) {
     progressValue += 1;
   }
 
-  if (data.question_2.length) {
+  if (dataFromLS?.question_2.length || data.question_2.length) {
     progressValue += 1;
   }
 
-  if (data.question_3.length) {
+  if (dataFromLS?.question_3.length || data.question_3.length) {
     progressValue += 1;
   }
 
-  if (data.question_4.name) {
+  if (dataFromLS?.question_4.name || data.question_4.name) {
     progressValue += 1;
   }
 
-  if (data.question_4.surname) {
+  if (dataFromLS?.question_4.surname || data.question_4.surname) {
     progressValue += 1;
   }
 
-  if (data.question_4.email) {
+  if (
+    RegExForMail.test(dataFromLS?.question_4.email || data.question_4.email)
+  ) {
     progressValue += 1;
   }
 
@@ -101,7 +101,7 @@ const toggleItem = (array, item) => {
 
 const initStep_1 = () => {
   const card = document.querySelector(".card[data-step='1']");
-  const startButton = card.querySelector("button[data-action='start']");
+  const startButton = document.querySelector("button[data-action='start']");
 
   startButton.addEventListener("click", () => stepActive(2));
 };
@@ -124,6 +124,7 @@ const initStep_2 = () => {
 
   function variantClickHandler() {
     data.question_1 = this.dataset.value;
+    localStorage.setItem("data", JSON.stringify(data));
 
     for (const variant of variants) {
       const radioButton = variant.querySelector('input[type="radio"]');
@@ -155,13 +156,12 @@ const initStep_3 = () => {
   }
 
   function variantClickHandler() {
-    const { value } = this.dataset;
-    toggleItem(data.question_2, value);
+    toggleItem(data.question_2, this.dataset.value);
+    localStorage.setItem("data", JSON.stringify(data));
 
     for (const variant of variants) {
-      const { value } = variant.dataset;
       const checkbox = variant.querySelector('input[type="checkbox"]');
-      checkbox.checked = data.question_2.includes(value);
+      checkbox.checked = data.question_2.includes(variant.dataset.value);
     }
 
     toNextButton.disabled = !data.question_2.length;
@@ -186,15 +186,13 @@ const initStep_4 = () => {
   }
 
   function variantClickHandler() {
-    const { value } = this.dataset;
-    toggleItem(data.question_3, value);
+    toggleItem(data.question_3, this.dataset.value);
+    localStorage.setItem("data", JSON.stringify(data));
 
     for (const variant of variants) {
-      if (data.question_3.includes(variant.dataset.value)) {
-        variant.classList.add("variant-square--active");
-      } else {
-        variant.classList.remove("variant-square--active");
-      }
+      data.question_3.includes(variant.dataset.value)
+        ? variant.classList.add("variant-square--active")
+        : variant.classList.remove("variant-square--active");
     }
 
     toNextButton.disabled = !data.question_3.length;
@@ -228,26 +226,26 @@ const initStep_5 = () => {
 
   function surnameInputHandler() {
     data.question_4.surname = this.value;
+    localStorage.setItem("data", JSON.stringify(data));
+
     checkFields();
   }
 
   function emailInputHandler() {
     data.question_4.email = this.value;
+    localStorage.setItem("data", JSON.stringify(data));
+
     checkFields();
   }
 
   function checkFields() {
     let activeButton = true;
 
-    if (!data.question_4.name) {
-      activeButton = false;
-    }
-
-    if (!data.question_4.surname) {
-      activeButton = false;
-    }
-
-    if (!RegExForMail.test(data.question_4.email)) {
+    if (
+      !data.question_4.name ||
+      !data.question_4.surname ||
+      !RegExForMail.test(data.question_4.email)
+    ) {
       activeButton = false;
     }
 
@@ -260,11 +258,13 @@ const initStep_6 = () => {
   const card = document.querySelector(".card[data-step='6']");
   const emailSpan = card.querySelector("span[data-field='email']");
 
-  emailSpan.textContent = data.question_4.email;
+  emailSpan.textContent =
+    JSON.parse(localStorage.getItem("data")).question_4.email ||
+    data.question_4.email;
 };
 
 const main = () => {
-  stepActive(1);
+  stepActive(localStorage.getItem("step") || 1);
   progressSegmentsUpdate();
 };
 

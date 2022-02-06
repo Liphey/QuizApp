@@ -67,6 +67,7 @@
 .card-text {
   margin: 10px 0;
   font-size: 25px;
+  text-align: center;
 }
 
 .card:not(.card_active) {
