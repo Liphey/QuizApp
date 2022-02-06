@@ -18,7 +18,7 @@ const data = {
 const stepActive = (number) => {
   const card = document.querySelector(`.card[data-step="${number}"]`);
 
-  if (!card || card.dataset.inited) return;
+  if (!card) return;
 
   for (const card of cards) {
     card.classList.remove("card_active");
@@ -26,30 +26,29 @@ const stepActive = (number) => {
 
   card.classList.add("card_active");
 
+  if (card.dataset.inited) return;
+
   card.dataset.inited = true;
 
-  if (number === 1) {
-    initStep_1();
-  }
-
-  if (number === 2) {
-    initStep_2();
-  }
-
-  if (number === 3) {
-    initStep_3();
-  }
-
-  if (number === 4) {
-    initStep_4();
-  }
-
-  if (number === 5) {
-    initStep_5();
-  }
-
-  if (number === 6) {
-    initStep_6();
+  switch (number) {
+    case 1:
+      initStep_1();
+      break;
+    case 2:
+      initStep_2();
+      break;
+    case 3:
+      initStep_3();
+      break;
+    case 4:
+      initStep_4();
+      break;
+    case 5:
+      initStep_5();
+      break;
+    case 6:
+      initStep_6();
+      break;
   }
 };
 
@@ -76,7 +75,7 @@ const progressSegmentsUpdate = () => {
     progressValue += 1;
   }
 
-  if (data.question_4.email) {
+  if (RegExForMail.test(data.question_4.email)) {
     progressValue += 1;
   }
 
@@ -155,13 +154,11 @@ const initStep_3 = () => {
   }
 
   function variantClickHandler() {
-    const { value } = this.dataset;
-    toggleItem(data.question_2, value);
+    toggleItem(data.question_2, this.dataset.value);
 
     for (const variant of variants) {
-      const { value } = variant.dataset;
       const checkbox = variant.querySelector('input[type="checkbox"]');
-      checkbox.checked = data.question_2.includes(value);
+      checkbox.checked = data.question_2.includes(variant.dataset.value);
     }
 
     toNextButton.disabled = !data.question_2.length;
@@ -186,15 +183,12 @@ const initStep_4 = () => {
   }
 
   function variantClickHandler() {
-    const { value } = this.dataset;
-    toggleItem(data.question_3, value);
+    toggleItem(data.question_3, this.dataset.value);
 
     for (const variant of variants) {
-      if (data.question_3.includes(variant.dataset.value)) {
-        variant.classList.add("variant-square--active");
-      } else {
-        variant.classList.remove("variant-square--active");
-      }
+      data.question_3.includes(variant.dataset.value)
+        ? variant.classList.add("variant-square--active")
+        : variant.classList.remove("variant-square--active");
     }
 
     toNextButton.disabled = !data.question_3.length;
@@ -237,21 +231,17 @@ const initStep_5 = () => {
   }
 
   function checkFields() {
-    let activeButton = true;
+    let activeNextButton = false;
 
-    if (!data.question_4.name) {
-      activeButton = false;
+    if (
+      data.question_4.name &&
+      data.question_4.surname &&
+      RegExForMail.test(data.question_4.email)
+    ) {
+      activeNextButton = true;
     }
 
-    if (!data.question_4.surname) {
-      activeButton = false;
-    }
-
-    if (!RegExForMail.test(data.question_4.email)) {
-      activeButton = false;
-    }
-
-    toNextButton.disabled = !activeButton;
+    toNextButton.disabled = !activeNextButton;
     progressSegmentsUpdate();
   }
 };
