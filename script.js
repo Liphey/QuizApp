@@ -4,17 +4,6 @@ const RegExForMail =
 const cards = document.querySelectorAll(".card");
 const progressSegments = document.querySelectorAll(".progress");
 
-const data = {
-  question_1: null,
-  question_2: [],
-  question_3: [],
-  question_4: {
-    name: "",
-    surname: "",
-    email: "",
-  },
-};
-
 const stepActive = (number) => {
   const card = document.querySelector(`.card[data-step="${number}"]`);
 
@@ -55,27 +44,52 @@ const stepActive = (number) => {
 const progressSegmentsUpdate = () => {
   let progressValue = 0;
 
-  if (data.question_1) {
+  if (
+    [...document.querySelectorAll(".card[data-step='2'] input")].some(
+      (variant) => variant.checked
+    )
+  ) {
     progressValue += 1;
   }
 
-  if (data.question_2.length) {
+  if (
+    [...document.querySelectorAll(".card[data-step='3'] input")].some(
+      (variant) => variant.checked
+    )
+  ) {
     progressValue += 1;
   }
 
-  if (data.question_3.length) {
+  if (
+    [
+      ...document.querySelectorAll(
+        ".card[data-step='4'] .variant-square--active"
+      ),
+    ].length
+  ) {
     progressValue += 1;
   }
 
-  if (data.question_4.name) {
+  if (
+    document.querySelector(".card[data-step='5'] input[data-field='name']")
+      .value
+  ) {
     progressValue += 1;
   }
 
-  if (data.question_4.surname) {
+  if (
+    document.querySelector(".card[data-step='5'] input[data-field='surname']")
+      .value
+  ) {
     progressValue += 1;
   }
 
-  if (RegExForMail.test(data.question_4.email)) {
+  if (
+    RegExForMail.test(
+      document.querySelector(".card[data-step='5'] input[data-field='email']")
+        .value
+    )
+  ) {
     progressValue += 1;
   }
 
@@ -91,11 +105,6 @@ const progressSegmentsUpdate = () => {
 
     progressText.style.dispay = progressPercent ? "" : "none";
   }
-};
-
-const toggleItem = (array, item) => {
-  const index = array.indexOf(item);
-  index === -1 ? array.push(item) : array.splice(index, 1);
 };
 
 const initStep_1 = () => {
@@ -122,8 +131,6 @@ const initStep_2 = () => {
   }
 
   function variantClickHandler() {
-    data.question_1 = this.dataset.value;
-
     for (const variant of variants) {
       const radioButton = variant.querySelector('input[type="radio"]');
       radioButton.checked = false;
@@ -154,14 +161,15 @@ const initStep_3 = () => {
   }
 
   function variantClickHandler() {
-    toggleItem(data.question_2, this.dataset.value);
+    const variant = this.querySelector(
+      '.variant-header > input[type="checkbox"]'
+    );
 
-    for (const variant of variants) {
-      const checkbox = variant.querySelector('input[type="checkbox"]');
-      checkbox.checked = data.question_2.includes(variant.dataset.value);
-    }
+    variant.checked = !variant.checked;
+    toNextButton.disabled = ![
+      ...card.querySelectorAll("input[type='checkbox']"),
+    ].some((input) => input.checked);
 
-    toNextButton.disabled = !data.question_2.length;
     progressSegmentsUpdate();
   }
 };
@@ -183,15 +191,10 @@ const initStep_4 = () => {
   }
 
   function variantClickHandler() {
-    toggleItem(data.question_3, this.dataset.value);
-
-    for (const variant of variants) {
-      data.question_3.includes(variant.dataset.value)
-        ? variant.classList.add("variant-square--active")
-        : variant.classList.remove("variant-square--active");
-    }
-
-    toNextButton.disabled = !data.question_3.length;
+    this.classList.toggle("variant-square--active");
+    toNextButton.disabled = ![
+      ...card.querySelectorAll(".variant-square--active"),
+    ].length;
     progressSegmentsUpdate();
   }
 };
@@ -211,32 +214,17 @@ const initStep_5 = () => {
   toPrevButton.addEventListener("click", () => stepActive(4));
   toNextButton.addEventListener("click", () => stepActive(6));
 
-  nameInput.addEventListener("keyup", nameInputHandler);
-  surnameInput.addEventListener("keyup", surnameInputHandler);
-  emailInput.addEventListener("keyup", emailInputHandler);
-
-  function nameInputHandler() {
-    data.question_4.name = this.value;
-    checkFields();
-  }
-
-  function surnameInputHandler() {
-    data.question_4.surname = this.value;
-    checkFields();
-  }
-
-  function emailInputHandler() {
-    data.question_4.email = this.value;
-    checkFields();
-  }
+  nameInput.addEventListener("keyup", checkFields);
+  surnameInput.addEventListener("keyup", checkFields);
+  emailInput.addEventListener("keyup", checkFields);
 
   function checkFields() {
     let activeNextButton = false;
 
     if (
-      data.question_4.name &&
-      data.question_4.surname &&
-      RegExForMail.test(data.question_4.email)
+      nameInput.value &&
+      surnameInput.value &&
+      RegExForMail.test(emailInput.value)
     ) {
       activeNextButton = true;
     }
@@ -250,7 +238,9 @@ const initStep_6 = () => {
   const card = document.querySelector(".card[data-step='6']");
   const emailSpan = card.querySelector("span[data-field='email']");
 
-  emailSpan.textContent = data.question_4.email;
+  emailSpan.textContent = document.querySelector(
+    "input[data-field='email']"
+  ).value;
 };
 
 const main = () => {
